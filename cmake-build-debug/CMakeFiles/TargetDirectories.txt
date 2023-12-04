@@ -1,0 +1,4 @@
+C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver/cmake-build-debug/CMakeFiles/Temp_Sensor_Driver.dir
+C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver/cmake-build-debug/CMakeFiles/Web_Server.dir
+C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver/cmake-build-debug/CMakeFiles/rebuild_cache.dir

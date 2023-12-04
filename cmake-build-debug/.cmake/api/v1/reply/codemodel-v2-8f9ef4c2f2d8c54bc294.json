@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.24"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Temp_Sensor_Driver",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "Temp_Sensor_Driver::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Temp_Sensor_Driver-Debug-bf636d269dcc5339add1.json",
+					"name" : "Temp_Sensor_Driver",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Web_Server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Web_Server-Debug-c5a6f3926656e390b925.json",
+					"name" : "Web_Server",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver/cmake-build-debug",
+		"source" : "C:/Users/silex/Dan_Files/Work/Advanced_Embedded_Software/Temp_Sensor_Driver"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}
