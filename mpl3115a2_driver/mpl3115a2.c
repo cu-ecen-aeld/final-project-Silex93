@@ -17,21 +17,7 @@
 #include <asm/uaccess.h>
 
 
-#define AESD_DEBUG 1  //Remove comment on this line to enable debug
-
-#undef PDEBUG             /* undef it, just in case */
-#ifdef AESD_DEBUG
-#  ifdef __KERNEL__
-/* This one if debugging is on, and kernel space */
-#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "mpl3115a2: " fmt, ## args)
-#  else
-/* This one for user space */
-#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
-#  endif
-#else
-#  define PDEBUG(fmt, args...) /* not debugging: nothing */
-#endif
-
+#define PDEBUG(fmt, args...)
 
 #define MAX_REG_MPL3115A2 0x2D
 #define SETUP_REG_MPL3115A2 0xF
