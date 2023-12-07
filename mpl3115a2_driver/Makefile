@@ -1,15 +1,15 @@
 obj-m := mpl3115a2.o
 
+KERNEL_SRC ?= /lib/modules/$(shell uname -r)/build
 SRC := $(shell pwd)
 
-
 all:
-     $(MAKE) -C $(KERNEL_SRC) M=$(SRC)
+	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules
 
 modules_install:
-     $(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules_install
+	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) modules_install
 
 clean:
-	rm -f *.o *~ core .depend .*.cmd *.ko *.mod.c
-	rm -f Module.markers Module.symvers modules.order
-	rm -rf .tmp_versions Modules.symvers
+	make -C $(KERNEL_SRC) M=$(SRC) clean
+
+.PHONY: all modules_install clean
