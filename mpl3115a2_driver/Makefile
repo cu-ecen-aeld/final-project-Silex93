@@ -17,7 +17,7 @@ obj-m	:= mpl3115a2.o
 mpl3115a2-y := main.o
 else
 
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+#KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD       := $(shell pwd)
 
 modules:
