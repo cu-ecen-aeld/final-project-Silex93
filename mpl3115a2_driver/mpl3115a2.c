@@ -15,7 +15,23 @@
 #include <stdbool.h>
 #include <linux/fs.h>
 #include <asm/uaccess.h>
-#include "mpl3115a2_driver.h"
+
+
+#define AESD_DEBUG 1  //Remove comment on this line to enable debug
+
+#undef PDEBUG             /* undef it, just in case */
+#ifdef AESD_DEBUG
+#  ifdef __KERNEL__
+/* This one if debugging is on, and kernel space */
+#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "mpl3115a2: " fmt, ## args)
+#  else
+/* This one for user space */
+#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#  endif
+#else
+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
+#endif
+
 
 #define MAX_REG_MPL3115A2 0x2D
 #define SETUP_REG_MPL3115A2 0xF
@@ -334,7 +350,7 @@ module_exit(mpl3115a2_remove);
 MODULE_AUTHOR("Daniel Mendez <dame8475@colorado.edu>");
 MODULE_DESCRIPTION("MPL3115A2 driver");
 MODULE_LICENSE("Dual BSD/GPL");
-
+MODULE_NAME("mpl3115a2");
 //manually load device
 //sudo bash -c 'echo mpl3115a2 0x60 > /sys/bus/i2c/devices/i2c-1/new_device'
 
