@@ -42,6 +42,12 @@
 #define OUT_T_MSB_REG 0x04
 #define OUT_T_LSB_REG 0x05
 
+
+MODULE_AUTHOR("Daniel Mendez <dame8475@colorado.edu>");
+MODULE_DESCRIPTION("MPL3115A2 driver");
+MODULE_LICENSE("Dual BSD/GPL");
+MODULE_NAME("mpl3115a2");
+
 struct mpl3115a2 {
     struct i2c_client *client;
     struct regmap *regmap;
@@ -347,10 +353,6 @@ module_init(mpl3115a2_init);
 module_exit(mpl3115a2_remove);
 
 
-MODULE_AUTHOR("Daniel Mendez <dame8475@colorado.edu>");
-MODULE_DESCRIPTION("MPL3115A2 driver");
-MODULE_LICENSE("Dual BSD/GPL");
-MODULE_NAME("mpl3115a2");
 //manually load device
 //sudo bash -c 'echo mpl3115a2 0x60 > /sys/bus/i2c/devices/i2c-1/new_device'
 
