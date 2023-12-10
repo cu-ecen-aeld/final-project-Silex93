@@ -6,6 +6,7 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 #include <linux/types.h>
+#include <linux/ioctl.h>
 #include <linux/regmap.h>
 #include <linux/i2c.h>
 #include <linux/err.h>
@@ -33,6 +34,21 @@
 #endif
 
 
+struct mpl3115a2_ioctl_cmd {
+ 
+    uint8_t reg_addr;
+    uint8_t data;
+	uint8_t output;
+	
+};
+
+
+#define MPL3115A2_IOC_MAGIC 0x16
+#define MPL3115A2_WRITE _IOW(MPL3115A2_IOC_MAGIC, 1, struct mpl3115a2_ioctl_cmd)
+#define MPL3115A2_READ _IOR(MPL3115A2_IOC_MAGIC, 1, struct mpl3115a2_ioctl_cmd)
+#define MPL3115A2_IOC_MAXNR 2
+
+
 #define MAX_REG_MPL3115A2 0x2D
 #define SETUP_REG_MPL3115A2 0xF
 #define MPL3115A2_ADDRESS 0x60
@@ -41,6 +57,7 @@
 #define PT_DATA_CFG_REG 0x13
 #define OUT_T_MSB_REG 0x04
 #define OUT_T_LSB_REG 0x05
+
 
 struct mpl3115a2 {
     struct i2c_client *client;
@@ -132,6 +149,8 @@ static int mpl3115a2_probe(struct i2c_client *client, const struct i2c_device_id
         PDEBUG("error setting to altimeter to active");
         return err;
     }
+	PDEBUG("MPL3115A2_READ: %d",MPL3115A2_READ);
+	PDEBUG("MPL3115A2_WRITE: %d",MPL3115A2_WRITE);
     return 0;
 
 }
@@ -268,6 +287,57 @@ ssize_t mpl3115a2_read(struct file *filp, char __user *buf, size_t count,
 	
 }
 
+static long mpl3115a2_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+    int tmp;
+	int err;
+	struct mpl3115a2_ioctl_cmd temp_mpl3115a2_cmd;
+	unsigned int reg_out;
+	uint8_t data;
+	//Get the aesd device structure
+	struct mpl3115a2 *dev = filp->private_data;
+	
+
+	//First copy in the structure
+	if(copy_from_user(&temp_mpl3115a2_cmd,(const void __user *)arg,sizeof(struct mpl3115a2_ioctl_cmd)) != 0){
+		return -EFAULT;
+	};
+	PDEBUG("Acquired structure succesfully %X, %X",temp_mpl3115a2_cmd.reg_addr,temp_mpl3115a2_cmd.data);
+    switch (cmd) {
+    case MPL3115A2_READ:
+		PDEBUG("READ COMMAND CALLED");
+		//Send the command to the mpl3115a2 by specifying the address and data
+		err = regmap_read(dev->regmap,temp_mpl3115a2_cmd.reg_addr , &reg_out);
+		if (err < 0) {
+        PDEBUG("error reading %X register",temp_mpl3115a2_cmd.reg_addr);
+        return err;
+    }
+		//Copy to uint8_t
+		data = (uint8_t) reg_out;
+			PDEBUG("Data read is %X",data);
+        // Now copy the result to user space
+		if (copy_to_user(&(((struct mpl3115a2_ioctl_cmd *)arg)->output), &data, sizeof(uint8_t)))
+            return -EFAULT;
+        break;
+
+    case MPL3115A2_WRITE:
+		PDEBUG("WRITE COMMAND CALLED");
+        err = regmap_write(dev->regmap, temp_mpl3115a2_cmd.reg_addr, temp_mpl3115a2_cmd.data);
+		if (err < 0) {
+			PDEBUG("error writing %X to %x",temp_mpl3115a2_cmd.data,temp_mpl3115a2_cmd.reg_addr);
+			return err;
+		}
+        break;
+
+
+    default:
+        return -EINVAL;
+    }
+
+    return 0;
+}
+
+
 
 
 struct file_operations mpl3115a2_fops = {
@@ -276,6 +346,7 @@ struct file_operations mpl3115a2_fops = {
     .write =    mpl3115a2_write,
     .open =     mpl3115a2_open,
     .release =  mpl3115a2_release,
+	.unlocked_ioctl = mpl3115a2_ioctl,
 };
 
 static int mpl3115a2_setup_cdev(struct mpl3115a2 *dev)
