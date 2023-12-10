@@ -42,9 +42,9 @@
 
 #define USE_AESD_CHAR_DEVICE 0
 
-#define PORT "80"
+#define PORT "5600"
 #define FLASK_PORT 5500
-#define BUFFER_SIZE 104857600 //100 MB buffer for requests
+#define BUFFER_SIZE 10485760 //100 MB buffer for requests
 #define BACKLOG 10   // how many pending connections queue will hold
 
 #if USE_AESD_CHAR_DEVICE
@@ -293,7 +293,7 @@ void *thread_function(void *thread_param) {
 	//int res;
 	
 	//Create a socket to the flask server server
-	char flask_response[4096];
+	char *flask_response = malloc(BUFFER_SIZE);
 	int flask_socket = socket(AF_INET, SOCK_STREAM, 0);
 	
 	if (flask_socket == -1) {
@@ -310,7 +310,7 @@ void *thread_function(void *thread_param) {
 			
     //Waits for data
 	
-	char recv_buffer [BUFFER_SIZE] ;
+	char * recv_buffer = malloc(BUFFER_SIZE) ;
 
         bytes_received = recv(client_socket, recv_buffer, BUFFER_SIZE, 0);
         if (bytes_received == -1) {
@@ -368,7 +368,8 @@ void *thread_function(void *thread_param) {
 		}
         
    
-   
+	free(recv_buffer);
+	free(flask_response);
     close(client_socket);  // No need for client socket anymore
 	close(flask_socket);
     threadData->thread_complete_success = true;
