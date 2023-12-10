@@ -42,7 +42,7 @@
 
 #define USE_AESD_CHAR_DEVICE 0
 
-#define PORT "5600"
+#define PORT "80"
 #define FLASK_PORT 5500
 #define BUFFER_SIZE 10485760 //100 MB buffer for requests
 #define BACKLOG 10   // how many pending connections queue will hold
@@ -96,28 +96,9 @@ typedef struct thread_node {
 SLIST_HEAD(threadList, thread_node) threadListHead = SLIST_HEAD_INITIALIZER(threadListHead);
 
         static void signal_handler(int signo) {
-    //Free the linked list
+    
     syslog(LOG_DEBUG, "Caught signal in sign handler %d", signo);
-    thread_node_t *currentElement, *tempElement;
-    SLIST_FOREACH_SAFE(currentElement, &threadListHead, entries, tempElement) {
-        //Remove the output file
-        char temp_file[256];
-        snprintf(temp_file, sizeof(temp_file), "/var/tmp/tempfile_%d.txt", currentElement->thread_params->thread_num);
-        if (remove(temp_file) == 0) {
-            printf("File '%s' deleted successfully.\n", temp_file);
-        }
-        syslog(LOG_DEBUG, "cleaned up files in handler");
-        //Join all running threads
-        //IDK if this should be pthread_cancel or pthread_join
-        pthread_join(currentElement->thread_id, NULL);
-        // Remove the element safely from the list.
-        SLIST_REMOVE(&threadListHead, currentElement, thread_node, entries);
-        //Free the thread param data
-        free(currentElement->thread_params);
-        //Free the node itself
-        free(currentElement);
-    }
-   
+ 
     //close the server socket
     close(server_socket_fd);
     printf("Signal Recieved %d \r\n", signo);
@@ -289,7 +270,7 @@ void *thread_function(void *thread_param) {
 
    
    
-    printf("Thread %d waiting on data!  \r\n", threadData->thread_num);
+    //printf("Thread %d waiting on data!  \r\n", threadData->thread_num);
 	//int res;
 	
 	//Create a socket to the flask server server
@@ -487,7 +468,7 @@ int main(int argc, char *argv[]) {
         inet_ntop(their_addr.ss_family,
                   get_in_addr((struct sockaddr *) &their_addr),
                   s, sizeof s);
-        printf("server: got connection from %s \r\n", s);
+       // printf("server: got connection from %s \r\n", s);
         syslog(LOG_INFO, "Accepted connection from %s \r\n", s);
 
 
@@ -520,15 +501,9 @@ int main(int argc, char *argv[]) {
         SLIST_FOREACH_SAFE(currentElement, &threadListHead, entries, tempElement) {
             //Check to see if the thread is completed
             if (currentElement->thread_params->thread_complete_success) {
-                printf("Cleanup of thread/node %d occuring \r\n", currentElement->thread_params->thread_num);
+                //printf("Cleanup of thread/node %d occuring \r\n", currentElement->thread_params->thread_num);
                 //Remove the output file
-                char temp_file[256];
-                snprintf(temp_file, sizeof(temp_file), "/var/tmp/tempfile_%d.txt",
-                         currentElement->thread_params->thread_num);
-                if (remove(temp_file) == 0) {
-                    printf("File '%s' deleted successfully.\n", temp_file);
-                }
-
+               
                 //Join the thread to cleanup its resources
                 pthread_join(currentElement->thread_id, NULL);
                 // Remove the element safely from the list.
