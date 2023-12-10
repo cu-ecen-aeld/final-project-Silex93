@@ -38,13 +38,13 @@
 #include <pthread.h>
 #include <regex.h>
 #include "queue.h"
-#include "mpl3115a2_ioctl.h"
 
 
 #define USE_AESD_CHAR_DEVICE 0
 
 #define PORT "80"
-#define BUFFER_SIZE 104857600
+#define FLASK_PORT 5500
+#define BUFFER_SIZE 104857600 //100 MB buffer for requests
 #define BACKLOG 10   // how many pending connections queue will hold
 
 #if USE_AESD_CHAR_DEVICE
@@ -58,7 +58,7 @@
 
 int server_socket_fd;
 regex_t http_get_regex;
-       
+struct sockaddr_in flask_addr;
 	   
 //Mappings for MIME types
 typedef struct {
@@ -290,14 +290,31 @@ void *thread_function(void *thread_param) {
    
    
     printf("Thread %d waiting on data!  \r\n", threadData->thread_num);
-	int res;
+	//int res;
+	
+	//Create a socket to the flask server server
+	char flask_response[4096];
+	int flask_socket = socket(AF_INET, SOCK_STREAM, 0);
+	
+	if (flask_socket == -1) {
+		perror("Flask socket creation failed");
+		close(client_socket);			
+	}
+	
+	 // Connect to the flask server
+	if (connect(flask_socket, (struct sockaddr *)&flask_addr, sizeof(flask_addr)) == -1) {
+		perror("Flask connection failed");
+		close(client_socket);
+		close(flask_socket);
+	}
+			
     //Waits for data
 	
-	char *recv_buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
+	char recv_buffer [BUFFER_SIZE] ;
 
         bytes_received = recv(client_socket, recv_buffer, BUFFER_SIZE, 0);
         if (bytes_received == -1) {
-            perror("recv");
+            perror("recv failed");
             close(client_socket);
 
         } else if (bytes_received == 0) {
@@ -308,6 +325,17 @@ void *thread_function(void *thread_param) {
 
         }
 		else{
+			//Send the recieved request to the flask server
+			send(flask_socket, recv_buffer, bytes_received, 0);
+			
+			//Get back the response and send it to the original client
+			ssize_t flask_bytes_received;
+			while ((flask_bytes_received = recv(flask_socket, flask_response, sizeof(flask_response), 0)) > 0) {
+				send(client_socket, flask_response, flask_bytes_received, 0);
+			}
+			
+			
+			/*
 			//First ensure that we recieved a GET request
 			regmatch_t matches[2];
 			res = regexec(&http_get_regex, recv_buffer, 2, matches, 0);
@@ -335,12 +363,14 @@ void *thread_function(void *thread_param) {
 
             free(response);
             free(file_name);
-			}
+			
+			}*/
 		}
         
    
-    free(recv_buffer);
+   
     close(client_socket);  // No need for client socket anymore
+	close(flask_socket);
     threadData->thread_complete_success = true;
     return (void *) threadData;
 }
@@ -380,6 +410,11 @@ int main(int argc, char *argv[]) {
 	
 	//Compile the regex for later use
 	regcomp(&http_get_regex, "^GET /([^ ]*) HTTP/1", REG_EXTENDED);
+	
+	//Setup the flask application address
+	flask_addr.sin_family = AF_INET;
+    flask_addr.sin_port = htons(FLASK_PORT);
+    flask_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Target server is on the same host so this is set localhost ofc
 
 
 
