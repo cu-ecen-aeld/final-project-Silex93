@@ -11,9 +11,12 @@ else
     group="wheel"
 fi
 
-if [ -e ${module}.ko ]; then
+if [ -e "/usr/bin/${module}.ko" ]; then
+    echo "Loading system file /usr/bin/${module}.ko"
+    insmod /usr/bin/${module}.ko $* || exit 1
+elif [ -e "${module}.ko" ]; then
     echo "Loading local built file ${module}.ko"
-    insmod ./$module.ko $* || exit 1
+    insmod ./${module}.ko $* || exit 1
 else
     echo "Local file ${module}.ko not found, attempting to modprobe"
     modprobe ${module} || exit 1
@@ -24,3 +27,5 @@ rm -f /dev/${device}
 mknod /dev/${device} c $major 0
 chgrp $group /dev/${device}
 chmod $mode  /dev/${device}
+
+
